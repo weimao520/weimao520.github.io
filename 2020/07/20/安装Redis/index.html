@@ -163,7 +163,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      104 字
+      106 字
     </span>
   
 
@@ -204,21 +204,27 @@
           <div class="post-content mx-auto" id="post">
             
             <article class="markdown-body">
-              <h2 id="安装GCC-编译器"><a href="#安装GCC-编译器" class="headerlink" title="安装GCC 编译器"></a>安装GCC 编译器</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install gcc -y</span><br></pre></td></tr></table></figure>
+              <h2 id="安装GCC-编译器"><a href="#安装GCC-编译器" class="headerlink" title="安装GCC 编译器"></a>安装GCC 编译器</h2><pre><code class="hljs c">yum install gcc -y</code></pre>
 
 
 
-<h2 id="进入Redis目录-，执行编译"><a href="#进入Redis目录-，执行编译" class="headerlink" title="进入Redis目录 ，执行编译"></a>进入Redis目录 ，执行编译</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd  redis<span class="number">-5.0</span><span class="number">.4</span></span><br><span class="line">    </span><br><span class="line">make</span><br></pre></td></tr></table></figure>
+<h2 id="进入Redis目录-，执行编译"><a href="#进入Redis目录-，执行编译" class="headerlink" title="进入Redis目录 ，执行编译"></a>进入Redis目录 ，执行编译</h2><pre><code class="hljs c">cd  redis<span class="hljs-number">-5.0</span><span class="hljs-number">.4</span>
+    
+make</code></pre>
 
 
 
-<h2 id="进入src-目录，执行安装命令"><a href="#进入src-目录，执行安装命令" class="headerlink" title="进入src 目录，执行安装命令"></a>进入src 目录，执行安装命令</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd src &amp;&amp; make install</span><br></pre></td></tr></table></figure>
+<h2 id="进入src-目录，执行安装命令"><a href="#进入src-目录，执行安装命令" class="headerlink" title="进入src 目录，执行安装命令"></a>进入src 目录，执行安装命令</h2><pre><code class="hljs c">cd src &amp;&amp; make install</code></pre>
 
 <p>​    </p>
-<h2 id="启动redis程序"><a href="#启动redis程序" class="headerlink" title="启动redis程序"></a>启动redis程序</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./redis-server  ../redis.conf</span><br><span class="line">redis-cli</span><br></pre></td></tr></table></figure>
+<h2 id="启动redis程序"><a href="#启动redis程序" class="headerlink" title="启动redis程序"></a>启动redis程序</h2><pre><code class="hljs c">./redis-server  ../redis.conf
+redis-cli</code></pre>
 
 <p>​    </p>
-<h2 id="修改redis-conf配置文件"><a href="#修改redis-conf配置文件" class="headerlink" title="修改redis.conf配置文件"></a>修改redis.conf配置文件</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">bind <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span>   ##允许任何地址访问 redis</span><br><span class="line">daemonize yes   ##以后台进程redis    </span><br><span class="line"><span class="keyword">protected</span>-mode no  ## 关闭保护功能</span><br><span class="line">requirepass root   ##  设置访问密码</span><br></pre></td></tr></table></figure>
+<h2 id="修改redis-conf配置文件"><a href="#修改redis-conf配置文件" class="headerlink" title="修改redis.conf配置文件"></a>修改redis.conf配置文件</h2><pre><code class="hljs c">bind <span class="hljs-number">0.0</span><span class="hljs-number">.0</span><span class="hljs-number">.0</span>   ##允许任何地址访问 redis
+daemonize yes   ##以后台进程redis    
+<span class="hljs-keyword">protected</span>-mode no  ## 关闭保护功能
+requirepass root   ##  设置访问密码</code></pre>
 
 
 
@@ -237,6 +243,12 @@
                 <div class="post-prevnext row">
                   <div class="post-prev col-6">
                     
+                    
+                      <a href="/2020/07/26/%E6%90%AD%E5%BB%BAhexo%E5%8D%9A%E5%AE%A2/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">搭建hexo博客</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
                     
                   </div>
                   <div class="post-next col-6">
