@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="HW">
+  <meta name="keywords" content="">
+  <title>笔记/微服务/3-0-4 断路器之Hystrix 熔断器说明 - WeiMao</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/github-gist.min.css" />
+  
+
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_yg9cfy8wd6.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script  src="/js/utils.js" ></script>
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+  <div class="mt-3 post-meta">
+    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+    <time datetime="2020-11-25 16:34">
+      2020年11月25日 下午
+    </time>
+  </div>
+
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      3k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      33
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h3 id="断路器在什么时候起作用"><a href="#断路器在什么时候起作用" class="headerlink" title="断路器在什么时候起作用"></a>断路器在什么时候起作用</h3><p>涉及到断路器的三个重要参数:<strong style="color:red">快照时间窗、请求总数阀值、错误百分比阀</strong>值。</p>
+<ul>
+<li><p><strong style="color:red">快照时间窗:</strong>断路器确定是否打开需要统计一些请求和错误数据, 而统计的时间范围就是快照时间窗,默认为最近的10秒。</p>
+</li>
+<li><p><strong style="color:red">请求总数阀值:</strong>在快照时间窗内，必须满足请求总数阀值才有资格熔断。默认为20,意味着在10秒内,如果该hystrix命令的调用次数不足20次,即使所有的请求都超时或其他原因失败，断路器都不会打开。</p>
+</li>
+<li><p><strong style="color:red">错误百分比阀值:</strong>当请求总数在快照时间窗内超过了阀值,比如发生了30次调用,如果在这30次调用中,有1 5次发生了超时异常,也就是超过50%的错误百分比，在默认设定50%阀值情况下，这时候就会将断路器打开。</p>
+</li>
+</ul>
+<h3 id="开启关闭的条件"><a href="#开启关闭的条件" class="headerlink" title="开启关闭的条件"></a>开启关闭的条件</h3><ul>
+<li>当满足一定阈值的时候（默认10秒内超过20个请求数）</li>
+<li>当失败率达到一定的时候（默认10内超50%的请求失败）</li>
+<li>达到以上两点要求，断路器将会开启</li>
+<li>当开启的时候，所有请求都不会进行转发</li>
+<li>一段之后（默认5秒），断路器将会是半开状态，会让其中一个请求进行转发，如果成功，断路器关闭。如果失败，继续开启。周而复始</li>
+</ul>
+<h3 id="断路器打开之后"><a href="#断路器打开之后" class="headerlink" title="断路器打开之后"></a>断路器打开之后</h3><ul>
+<li><p>再有请求调用的时候,将不会调用主逻辑，醍直接调用降级fallback。通过断路器，实现了自动地发现错误并将降级逻辑切换为主逻辑，减少响应延迟的效果。</p>
+</li>
+<li><p>原来的主逻辑要如何恢复呢?<br>   对于这- -问题，hystrix也为我们实现了 自动恢复功能。<br>   当断路器打开,对主逻辑进行熔断之后，hystrix会启动- 个休眠时间窗,在这个时间窗内,降级逻辑是临时的成为主逻辑,<br>   当休眠时间窗到期，断路器将进入半开状态,释放- -次请求到原来的主逻辑上,如果此次请求正常返回,那么断路器将继续闭合,<br>   主逻辑恢复,如果这次请求依然有问题，断路器继续进入打开状态,休眠时间窗重新计时。</p>
+</li>
+</ul>
+<p>Hystrix <strong>所有配置</strong></p>
+<pre><code class="hljs java">    <span class="hljs-meta">@HystrixCommand</span>(fallbackMethod = <span class="hljs-string">"str. _fallbackMethod"</span>,
+            groupKey = <span class="hljs-string">"strGroupCommand"</span>,
+            commandKey = <span class="hljs-string">"strCommarld"</span>,
+            threadPoolKey = <span class="hljs-string">"strThreadPool"</span>,
+            commandProperties = &#123;
+<span class="hljs-comment">//没置隔离策略，THREAD 表示线程他SEMAPHORE: 信号池隔离</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"execution. isolation. strategy"</span>, value = <span class="hljs-string">"THREAD"</span>),
+<span class="hljs-comment">//当隔离策峪选撣信号他隔离的时候，用来没置信号池的大小(最大并发数)</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"execution. isolation. semaphore . maxConcurrentRequests"</span>, value = <span class="hljs-string">"10"</span>),
+<span class="hljs-comment">//配置命令执行的超时时间</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"execution. isolation . thread . timeoutinMilliseconds"</span>, value = <span class="hljs-string">"10"</span>),
+<span class="hljs-comment">//是否启用超时时间</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"execution. timeout . enabled"</span>, value = <span class="hljs-string">"true"</span>),
+<span class="hljs-comment">//执行超时的时候是否中断</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"execution. isolation. thread . interruptOnTimeout"</span>, value = <span class="hljs-string">"true"</span>),
+<span class="hljs-comment">//执行被取消的时候是否中断</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">" execution. isolation. thread . interrupt0nCancel"</span>, value = <span class="hljs-string">"true"</span>),
+<span class="hljs-comment">//允许回调方法执行的最大并发数</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"fallback. isolation. semaphore . maxConcurrentRequests"</span>, value = <span class="hljs-string">"10"</span>),
+<span class="hljs-comment">//服务降級是否启用，是否执行回调函数</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"fallback. enabled"</span>, value = <span class="hljs-string">"true"</span>),
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"circuitBreaker . enabled"</span>, value = <span class="hljs-string">"true"</span>),
+                    <span class="hljs-comment">//该属性用来没置在壤动时间窗中，断路器熔断的最小请求数。例如，默认该值为20的时候，</span>
+<span class="hljs-comment">//如果滚动时间窗(默以10秒)内仅收到了19个请求，即使这19 个请求都失败了，断路器也不会打开。</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"circuitBreaker . requestVolumeThreshold"</span>, value = <span class="hljs-string">"20"</span>),
+<span class="hljs-comment">//该属性用来没置在滚动时间窗中，表示在烧动时间窗中，在请求数量超过</span>
+<span class="hljs-comment">// circuitBreaker. requestVoLumeThreshold的情况下，如果错误请求数的百分比超过50,</span>
+<span class="hljs-comment">// 就把断路器设置为 ”打开”状态，否则就设置为 "关闭”状态。</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"circuitBreaker . errorThresholdPercentage"</span>, value = <span class="hljs-string">"50"</span>),
+<span class="hljs-comment">//该属性用来没置当断路器打开之后的休眠时间窗。休眠时间窗结束之后,</span>
+<span class="hljs-comment">//会将断路器置为”半开”状态，尝试熔断的请求命令， 如果依然失败就将断路器继续没置为”打开”状态,</span>
+<span class="hljs-comment">//如果成功就没置为"关闭”状态。</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"circuitBreaker . sleepWindowinMilliseconds"</span>, value = <span class="hljs-string">"5000"</span>),
+<span class="hljs-comment">//断路器强制打开</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">" circuitBreaker . forceOpen"</span>, value = <span class="hljs-string">"false"</span>),
+<span class="hljs-comment">//断路器强制关闭</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">" circuitBreaker . forceClosed"</span>, value = <span class="hljs-string">"false"</span>),
+<span class="hljs-comment">//滚动时间窗没置，该时间用于断路器判断健康度时需要收集信息的持续时间</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"metrics .rollingStats . timeinMilliseconds"</span>, value = <span class="hljs-string">"10000"</span>),
+<span class="hljs-comment">//该属性用来设置燎动时间窗统计指标信息时划分"桶"的数量，断路器在收集指标信息的时候会根据</span>
+<span class="hljs-comment">//没置的时间窗长度拆分成多个”桶”来累计各度量值，每个” 桶"记录了-段时间内的来集指标。</span>
+<span class="hljs-comment">//比如10秒内拆分成10个”桶"收集这样,所以timeinMilliseconds 必须能被numBuckets 整除。否则会抛异常</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"metrics . rollingStats . numBuckets"</span>, value = <span class="hljs-string">"10"</span>),
+                    <span class="hljs-comment">//滚动时间窗设置，该时间用于断路器判断健康度时需要收集信息的持续时间</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"metrics . rollingStats . timeinMilliseconds"</span>, value = <span class="hljs-string">"10000"</span>),
+<span class="hljs-comment">//该属性用来没置熾动时间窗统计指标信息时划分”桶"的数量，断路器在收集指标信息的时候会根据</span>
+<span class="hljs-comment">//设置的时间窗长度拆分成多个”桶”来累计各度量值，每个”桶"记录了-段时间内的采集指标。</span>
+<span class="hljs-comment">//比如10秒内拆分成10个”桶"收集这样，所以timeinMilliseconds 必须能被numBuckets 整除。否则会抛异常</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"metrics. rollingStats . numBuckets"</span>, value = <span class="hljs-string">"10"</span>),
+<span class="hljs-comment">//该属性用来没置对命令执行的延迟是否使用百分位数来跟踪和计算。如果没置为false,那么所有的概要统计都将返回-1。</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"metrics.rollingPercentile.enabled"</span>, value = <span class="hljs-string">"false"</span>),
+<span class="hljs-comment">//该属性用来没置百分位统i计的滚动窗口的持续时间，单位为亳秒。</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"metrics. rollingPercentile . timeInMilliseconds"</span>, value = <span class="hljs-string">"6000"</span>),
+<span class="hljs-comment">// 该属性用来没置百分位统计壤动窗口中使用“桶”的数量。</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"metrics . rollingPercentile. numBuckets"</span>, value = <span class="hljs-string">"60000"</span>),
+<span class="hljs-comment">//该属性用来没置在执行过程中每个 “桶” 中保留的最大执行次数。如果在滚动时间窗内发生超过该没定值的执行次数,</span>
+<span class="hljs-comment">//就从最初的位置开始重写。例如，将该值没置为100，壤动窗口为10秒，若在10秒内一个“桶 ”中发生了500次执行，</span>
+                    <span class="hljs-comment">//那么该“桶”中只保留最后的100次执行的统计。另外，增加该值的大小将会增加内存量的消耗，并增加排序百分位数所需的计算时间。</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"metrics. rollingPercentile . bucketSize"</span>, value = <span class="hljs-string">"100"</span>),
+<span class="hljs-comment">//该属性用来没置采集影响断路器状态的健康快照(请求的成功、错误百分比) 的间隔等待时间。</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"metrics. healthSnapshot . intervalinMilliseconds"</span>, value = <span class="hljs-string">"500"</span>),
+<span class="hljs-comment">//是否开启请求缓存</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">" requestCache . enabled"</span>, value = <span class="hljs-string">"true"</span>),
+<span class="hljs-comment">// HystrixCommand的执行和事件是否打印日志到HystrixRequestLog中</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"requestLog.enabled"</span>, value = <span class="hljs-string">"true"</span>),
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"metrics. rollingPercentile . bucketSize"</span>, value = <span class="hljs-string">"100"</span>),
+<span class="hljs-comment">//该属性用来没置采集影响断路器状态的健康快照(请求的成功、错误百分比)的间隔等待时间。</span>
+
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"metrics . healthSnapshot . intervalinMilliseconds"</span>, value = <span class="hljs-string">"500"</span>),
+<span class="hljs-comment">//是否开启请求缓存</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"requestCache .enabled"</span>, value = <span class="hljs-string">"true"</span>),
+<span class="hljs-comment">// HystrixCommand的执行和事件是否打印日志到HystrixRequestLog中</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">" requestLog. enabled"</span>, value = <span class="hljs-string">"true"</span>),
+            &#125;,
+            threadPoolProperties = &#123;
+<span class="hljs-comment">//该参数用来没置执行命令线程池的核心线程数， 该值也就是命令执行的最大并发量</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"coreSize"</span>, value = <span class="hljs-string">"10"</span>),
+<span class="hljs-comment">//该参数用来没置线程地的最大队列大小。当没置为-1时，线程池将使用SynchronousQueue 实现的队列,</span>
+<span class="hljs-comment">//否则将使用LinkedBlockingQueue 实现的队列。</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"maxQueueSize"</span>, value = <span class="hljs-string">"-1"</span>),
+<span class="hljs-comment">//该参数用来为队列没置拒绝阙值。通过该参数，即使队列没 有达到最大值也能拒绝请求。</span>
+<span class="hljs-comment">//该参数主要是对LinkedBlockingQueue队列的补充,因为LinkedBlockingQueue</span>
+<span class="hljs-comment">//队列不能动态修改它的对象大小，而通过该属性就可以调整拒绝请求的队列大小了。</span>
+                    <span class="hljs-meta">@HystrixProperty</span>(name = <span class="hljs-string">"queueSizeRejectionThreshold"</span>, value = <span class="hljs-string">"5"</span>),&#125;)
+    <span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">strConsumer</span><span class="hljs-params">()</span> </span>&#123;
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"he1lo 2020"</span>;
+    &#125;</code></pre>
+
+
+
+
+
+<h3 id="Hystrix执行流程"><a href="#Hystrix执行流程" class="headerlink" title="Hystrix执行流程"></a>Hystrix执行流程</h3><ol>
+<li><p>创建HystrixCommand (用在依赖的服务返回单个操作结果的时候)或HystrixObserableCommand (用在依赖的服务返回多个操作结果的时候)对象。</p>
+</li>
+<li><p>命令执行。其中HystrixComand实现了下面前两种执行方式:而HystrixObservableCommand实现了后两种执行方式: execute0: 同步执行，从依赖的服务返回一个单-的结果对象，或是在发生错误的时候抛出异常。queue0: 异步执行，直接返回 -个Future对象，其中包含 了服务执行结束时要返回的单一结果对象。 observe0: 返回Observable对象，它代表了操作的多个结果,它是一个Hot Obserable (不论事件源”是否有“订阅者”.都会在创建后对事件进行发布,所以对于Hot Observable的每-个“订阅者”都有可能是从°事件源”的中途开始的.并可能只是看到了整个操作的局部过程) . toObservable0: 同样会返回Observable对象，也代表了操作的多个结果,但它返回的是一个Cold Observable (没有“订阅者”的时候并不会发布事件.而是进行等待.直到有“订阅者”之后才发布事件,所以对于Cold Observable的订阅者,它可以保证从-开始看到整个操作的全部过程) .</p>
+</li>
+<li><p>若当前命令的请求缓存功能是被启用的，并且该命令缓存命中， 那么缓存的结果会立即以 Observable对象的形式返回。</p>
+</li>
+<li><p>检查断路器是否为打开状态。如果断路器是打开的，那么Hytix不会执行令,而是转接到flback处理逻辑(第8步) :如果断路器是关闭的，检查是否有可用资源来执行命令(第5步) .</p>
+</li>
+<li><p>| 线程池/请求队列/信号量是否占满。如果命令依赖服务的专有线程地和请求队列.或者信号量(不使用线程地的时候)已经被占满， 那么Hystix也不会执行命令。 而是转接到fllback处理逻辑(第8步）</p>
+</li>
+<li><p>Hystrix 会根据我们编写的方法来决定采取什么样的方式去请求依赖服务。HystrixCommand.run0 :返回-一个单-的结果, 或者抛出异常。HystrixObservableCommand.construct0: 返回一个Observable对象来发射多个结果.或通过onError发送错误通知。</p>
+</li>
+<li><p>| Hystrix会将“成功”、 “失败”、 “拒绝”、 “超时“等信息报告治断路器，而断路器会维护- 组计数嚣来统计这些数据。断路器会使用这些统计数据来决定是否要将断路器打开.来对某个依赖服务的请求进行“焰断/短路”.</p>
+</li>
+<li><p>当命令执行失败的时候，Hystrix 会进入flback尝试回退处理，我们通常也称该操作为 ”服务降级”.而能够引起服务降级处理的情况有下面几种:第4步:当前命令处于 “熔断/短路“状态.断路器是打开的时候。第5步:当前命令的线程池、 请求队列或 者信号量被占满的时候。第6步: HystrixObservableCommand.construct0) 或HystrixCommand.run0抛出异常的时候。</p>
+</li>
+<li><p>当Hystrix命令执行成功之后，它会将处理结果直接返回或是以Observable 的形式返回。</p>
+</li>
+</ol>
+<pre><code>**&lt;strong style=&quot;color:red&quot;&gt;tips:&lt;/strong&gt;**如果我们没有为命令实现降级逻辑或者在降级处理逻辑中抛出了异常，Hystix 依然会返回一个Observable对象，但是它不会发射任何结果数据，而是通过onError方法通知命令立即中断请求.并通过onError(方法将引起命令失败的异常发送给调用者.</code></pre>
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" target="_blank" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/11/25/%E7%AC%94%E8%AE%B0/%E5%BE%AE%E6%9C%8D%E5%8A%A1/3-0-5%20%E6%96%AD%E8%B7%AF%E5%99%A8%E4%B9%8BHystrix%20%20%E7%9B%91%E6%8E%A7%E6%B5%8B%E8%AF%95%20/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">笔记/微服务/3-0-5 断路器之Hystrix  监控测试 </span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/11/25/%E7%AC%94%E8%AE%B0/%E5%BE%AE%E6%9C%8D%E5%8A%A1/3-0-3%20%E6%96%AD%E8%B7%AF%E5%99%A8%E4%B9%8BHystrix%20%E7%86%94%E6%96%AD%E5%99%A8%E4%BD%BF%E7%94%A8/">
+                        <span class="hidden-mobile">笔记/微服务/3-0-3 断路器之Hystrix 熔断器使用</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: 'article.markdown-body',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "笔记/微服务/3-0-4 断路器之Hystrix 熔断器说明&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"model":{"jsonPath":"/live2dw/assets/hijiki.model.json"},"display":{"position":"right","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>

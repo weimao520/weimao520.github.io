@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="HW">
+  <meta name="keywords" content="">
+  <title>笔记/微服务/9-1-1springcloudAlibabaSentinel使用 - WeiMao</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/github-gist.min.css" />
+  
+
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_yg9cfy8wd6.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script  src="/js/utils.js" ></script>
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Fluid</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              
+  <div class="mt-3 post-meta">
+    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+    <time datetime="2020-11-25 16:34">
+      2020年11月25日 下午
+    </time>
+  </div>
+
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      2.3k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      27
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h3 id="安装Sentinel"><a href="#安装Sentinel" class="headerlink" title="安装Sentinel"></a>安装Sentinel</h3><pre><code>**Sentienl 分为两个部分：**</code></pre><ul>
+<li>核心库（java客户端）不依赖任何框架/库，能够运行于所有Java 运行时环境，同时对Dubbo/Spring Cloud 等框架也有较好的支持。</li>
+<li>控制台（Dashboard）基于SpringBoot 开发，打包后可以直接运行，不需要额外的Tomcat等应用容器。</li>
+</ul>
+<h3 id="下载https-github-com-alibaba-Sentinel-releases"><a href="#下载https-github-com-alibaba-Sentinel-releases" class="headerlink" title="下载https://github.com/alibaba/Sentinel/releases"></a>下载<a href="https://github.com/alibaba/Sentinel/releases" target="_blank" rel="noopener">https://github.com/alibaba/Sentinel/releases</a></h3><p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201105220806333.png" srcset="/img/loading.gif" alt="image-20201105220806333"></p>
+<h3 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h3><p>​    下载之后（有本地环境的情况下） 直接cmd </p>
+<pre><code class="hljs java">java -jar xxx.jar</code></pre>
+
+<p><strong style="color:red">默认占用的8080(跟tomcat一样)</strong></p>
+<p>访问：localhost:8080  默认登录名密码都是 sentinel</p>
+<p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201105221725250.png" srcset="/img/loading.gif" alt="image-20201105221725250"></p>
+<h3 id="创建工程"><a href="#创建工程" class="headerlink" title="创建工程"></a>创建工程</h3><p><strong>pom</strong></p>
+<pre><code class="hljs java">&lt;dependency&gt;
+     &lt;groupId&gt;com.alibaba.cloud&lt;/groupId&gt;
+     &lt;artifactId&gt;spring-cloud-starter-alibaba-sentinel&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre>
+
+
+
+<p><strong>YML</strong></p>
+<pre><code class="hljs java">server:
+  port: <span class="hljs-number">8401</span>
+
+spring:
+  application:
+    name: cloudalibaba-sentinel-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:<span class="hljs-number">8848</span>
+    sentinel:
+      transport:
+        dashboard: localhost:<span class="hljs-number">8080</span>
+        port: 8719  #默认8719，假如被占用了会自动从8719开始依次+1扫描。直至找到未被占用的端口
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: <span class="hljs-string">'*'</span></code></pre>
+
+
+
+<p><strong>启动类</strong></p>
+<pre><code class="hljs java"><span class="hljs-meta">@EnableDiscoveryClient</span>
+<span class="hljs-meta">@SpringBootApplication</span>
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MainApp8401</span></span>
+<span class="hljs-class"></span>&#123;
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">main</span><span class="hljs-params">(String[] args)</span> </span>&#123;
+        SpringApplication.run(MainApp8401<span class="hljs-class">.<span class="hljs-keyword">class</span>, <span class="hljs-title">args</span>)</span>;
+    &#125;
+&#125;</code></pre>
+
+<p><strong>controller</strong></p>
+<pre><code class="hljs java"><span class="hljs-meta">@RestController</span>
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">FlowLimitController</span></span>
+<span class="hljs-class"></span>&#123;
+    <span class="hljs-meta">@GetMapping</span>(<span class="hljs-string">"/testA"</span>)
+    <span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">testA</span><span class="hljs-params">()</span> </span>&#123;
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"------testA"</span>;
+    &#125;
+
+    <span class="hljs-meta">@GetMapping</span>(<span class="hljs-string">"/testB"</span>)
+    <span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">testB</span><span class="hljs-params">()</span> </span>&#123;
+
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"------testB"</span>;
+    &#125;
+
+&#125;</code></pre>
+
+
+
+<p><strong>然后启动项目，在访问 sentinel 控制台（localhost:8080）</strong></p>
+<p><strong>会发现什么都没有  : 由于Sentinel 采用的是懒加载机制，所以需要你自定义的方法先执行一次</strong></p>
+<p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201105223514982.png" srcset="/img/loading.gif" alt="image-20201105223514982"></p>
+<h3 id="流控规则"><a href="#流控规则" class="headerlink" title="流控规则"></a>流控规则</h3><p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201105223849585.png" srcset="/img/loading.gif" alt="image-20201105223849585"></p>
+<p><strong style="color:red">说明:</strong></p>
+<p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201105224205378.png" srcset="/img/loading.gif" alt="image-20201105224205378"></p>
+<h4 id="流控模式"><a href="#流控模式" class="headerlink" title="流控模式"></a>流控模式</h4><p><strong>配置说明</strong></p>
+<h5 id="直接"><a href="#直接" class="headerlink" title="直接"></a><strong>直接</strong></h5><p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201105224344408.png" srcset="/img/loading.gif" alt="image-20201105224344408"></p>
+<p><strong>测试</strong></p>
+<p>快速访问localhost:8401/testA (一秒内两次)</p>
+<p>会发现浏览器会返回一个</p>
+<p>​        <strong style="color:blue">Blocked by Sentinel (flow limiting)</strong></p>
+<h5 id="关联"><a href="#关联" class="headerlink" title="关联"></a>关联</h5><p>当相关的的资源达到阈值值，就限流自己（比如：当与A 关联的资源B达到阈值的时候，就限流）</p>
+<p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201106201910754.png" srcset="/img/loading.gif" alt="image-20201106201910754"></p>
+<p><strong>测试</strong></p>
+<p>可以使用 <strong style="color:blue">postman 或者 JMeter</strong> 等测试工具 并发密集的访问testB</p>
+<p>同时访问 testA  然后你会发现A失效了</p>
+<p>​    <strong style="color:blue">Blocked by Sentinel (flow limiting)</strong></p>
+<h3 id="流控效果"><a href="#流控效果" class="headerlink" title="流控效果"></a>流控效果</h3><p><strong>快速失败</strong></p>
+<p>​    直接失败，跑出异常。</p>
+<p><strong>预热</strong></p>
+<p>​    公式：<strong style="color:red">阈值除以coldFactor(默认值3)，经过预热时长后才会达到阈值</strong></p>
+<p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201106235453597.png" srcset="/img/loading.gif" alt="image-20201106235453597"></p>
+<p><strong>测试</strong></p>
+<p>快速多次访问testB  刚开始不行</p>
+<p><strong style="color:blue">应用场景: 秒杀系统之类的。在秒杀系统开启的瞬间，会有很多流量上来，很有可能把系统打死，预热方式就是为了保护系统，可慢慢的把流量放进来，慢慢的把阈值增长的设置的阈值</strong></p>
+<h5 id="排队等待"><a href="#排队等待" class="headerlink" title="排队等待"></a>排队等待</h5><p>介绍：<strong style="color:red"> 均速排队，阈值必须设置为QPS</strong></p>
+<p>匀速排队，让请求以均匀的速度通过。</p>
+<p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201107000308042.png" srcset="/img/loading.gif" alt="image-20201107000308042"></p>
+<h3 id="降级规则"><a href="#降级规则" class="headerlink" title="降级规则"></a>降级规则</h3><p>​    基本介绍：Sentinel熔断降级会在调用链路中某个资源出现不稳定状态时（(例如调用超时或异常比例升高)，对这个资源的调用进行限制，让请求快速失败，避免影响到其它的资源而导致级联错误。</p>
+<p>当资源被降级后，在接下来的降级时间窗口之内，对该资源的调用都自动熔断（默认行为是抛出 DegradeException)。</p>
+<p>ps:<strong style="color:red">Sentinel的断路器是没有半开状态的</strong></p>
+<p>Hystrix：半开的状态系统自动去检测是否请求有异常，没有异常就关闭断路器恢复使用，有异常则继续打开断路器不可用</p>
+<p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201107170445805.png" srcset="/img/loading.gif" alt="image-20201107170445805"></p>
+<h5 id="RT"><a href="#RT" class="headerlink" title="RT"></a>RT</h5><p>​    介绍：平均响应时间：当1s内持续进入5个请求，对应时刻的平均响应时间 （秒）均超过阈值（count,以ms为单位）,那么在接下的时间窗口（DegradeRule中的timeWindow，以s为单位）之内，对这个方法的调用自动的熔断（抛出degradeException） <strong style="color:red">注意Sentinel默认统计的RT 上限是4900ms,超出此阈值的都会算作4900ms,若需要变更此上线可以通过启动配置项来-Dcsp.sentinel.statistic.max.rt=xxx配置</strong></p>
+<p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201107173236342.png" srcset="/img/loading.gif" alt="image-20201107173236342"></p>
+<p><strong>代码</strong></p>
+<pre><code class="hljs java">
+<span class="hljs-meta">@GetMapping</span>(<span class="hljs-string">"/testD"</span>)
+<span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">testD</span><span class="hljs-params">()</span></span>
+<span class="hljs-function"></span>&#123;
+    <span class="hljs-keyword">try</span> &#123; TimeUnit.SECONDS.sleep(<span class="hljs-number">1</span>); &#125; <span class="hljs-keyword">catch</span> (InterruptedException e) &#123; e.printStackTrace(); &#125;
+    log.info(<span class="hljs-string">"testD 测试RT"</span>);
+
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"------testD"</span>;
+&#125;</code></pre>
+
+<p><strong>配置</strong></p>
+<p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201107173724194.png" srcset="/img/loading.gif" alt="image-20201107173724194"></p>
+<p><strong>测试</strong></p>
+<p>使用JMeter 进行测试一秒钟10个线程 发送请求；</p>
+<p><strong>结论</strong></p>
+<p>永远一秒钟打进来10个线程(大于5个了)调用testD，我们希望200毫秒处理完本次任务，<br>如果超过200毫秒还没处理完，在未来1秒钟的时间窗口内，断路器打开(保险丝跳闸)微服务不可用，保险丝跳闸断电了</p>
+<p>后续我停止jmeter，没有这么大的访问量了，断路器关闭(保险丝恢复)，微服务恢复OK</p>
+<h5 id="降级比列"><a href="#降级比列" class="headerlink" title="降级比列"></a>降级比列</h5><p>介绍：</p>
+<p>异常比例(DEGRADE_GRADE_EXCEPTION_RATIo ):当资源的每秒请求量&gt;=5，并且每秒异常总数占<br>通过量的比值超过阈值（ DegradeRule中的count）之后，资源进入降级状态，即在接下的时<br>间窗口（ DegradeRule中的 timeWindow，以s为单位)之内，对这个方法的调用都会自动地返<br>回。异常比率的阈值范围是[0.0,1.0]，代表0%- 100%。</p>
+<p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201107174332652.png" srcset="/img/loading.gif" alt="image-20201107174332652"></p>
+<p><strong>代码</strong></p>
+<pre><code class="hljs java"><span class="hljs-meta">@GetMapping</span>(<span class="hljs-string">"/testD"</span>)
+    <span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">testD</span><span class="hljs-params">()</span></span>
+<span class="hljs-function">    </span>&#123;
+
+        log.info(<span class="hljs-string">"testD 测试RT"</span>);
+        <span class="hljs-keyword">int</span> age = <span class="hljs-number">10</span>/<span class="hljs-number">0</span>;
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"------testD"</span>;
+    &#125;</code></pre>
+
+<p><strong>配置</strong></p>
+<p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201107175535549.png" srcset="/img/loading.gif" alt="image-20201107175535549"></p>
+<p><strong>测试</strong></p>
+<p>使用JMeter 一秒钟 启动20个线程访问  TestD</p>
+<p><strong>结论</strong></p>
+<p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201107193828009.png" srcset="/img/loading.gif" alt="image-20201107193828009"></p>
+<h5 id="异常数"><a href="#异常数" class="headerlink" title="异常数"></a>异常数</h5><p>介绍：</p>
+<p>异常数(DEGRADE_GRADE_EXCEPTION_COUNT):当资源近1分钟的异常数目超过阈值之后会进行熔<br>断。注意由于统计时间窗口是分钟级别的，若timeWindow小于60s，则结束熔断状态后仍可能<br>再进入熔断状态。</p>
+<p>ps：<strong style="color:red">异常数按分钟统计的</strong></p>
+<p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201107194132086.png" srcset="/img/loading.gif" alt="image-20201107194132086"></p>
+<p><strong>代码</strong></p>
+<pre><code class="hljs java"><span class="hljs-meta">@GetMapping</span>(<span class="hljs-string">"/testE"</span>)
+<span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">testE</span><span class="hljs-params">()</span></span>
+<span class="hljs-function"></span>&#123;
+    log.info(<span class="hljs-string">"testE 测试异常数"</span>);
+    <span class="hljs-keyword">int</span> age = <span class="hljs-number">10</span>/<span class="hljs-number">0</span>;
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"------testE 测试异常数"</span>;
+&#125;</code></pre>
+
+
+
+<p><strong>配置</strong></p>
+<p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201107194321613.png" srcset="/img/loading.gif" alt="image-20201107194321613"></p>
+<h3 id="热点key限流"><a href="#热点key限流" class="headerlink" title="热点key限流"></a>热点key限流</h3><p>介绍：热点即经常访问的数据。很多时候我们希望统计某个热点数据中访问频次最高的 Top K 数据，并对其访问进行限制。比如：</p>
+<ul>
+<li>商品 ID 为参数，统计一段时间内最常购买的商品 ID 并进行限制</li>
+<li>用户 ID 为参数，针对一段时间内频繁访问的用户 ID 进行限制</li>
+</ul>
+<p>热点参数限流会统计传入参数中的热点参数，并根据配置的限流阈值与模式，对包含热点参数的资源调用进行限流。热点参数限流可以看做是一种特殊的流量控制，仅对包含热点参数的资源调用生效。</p>
+<p>Sentinel 利用 LRU 策略统计最近最常访问的热点参数，结合令牌桶算法来进行参数级别的流控。热点参数限流支持集群模式。</p>
+<p><strong>代码</strong></p>
+<pre><code class="hljs java"><span class="hljs-comment">/**</span>
+<span class="hljs-comment">* value 唯一 指定配置 </span>
+<span class="hljs-comment">*blockHandler  指定兜底方法</span>
+<span class="hljs-comment">**/</span>
+<span class="hljs-meta">@GetMapping</span>(<span class="hljs-string">"/testHotKey"</span>)
+<span class="hljs-meta">@SentinelResource</span>(value = <span class="hljs-string">"testHotKey"</span>,blockHandler = <span class="hljs-string">"deal_testHotKey"</span>) 
+<span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">testHotKey</span><span class="hljs-params">(@RequestParam(value = <span class="hljs-string">"p1"</span>,required = <span class="hljs-keyword">false</span>)</span> String p1,</span>
+<span class="hljs-function">                         @<span class="hljs-title">RequestParam</span><span class="hljs-params">(value = <span class="hljs-string">"p2"</span>,required = <span class="hljs-keyword">false</span>)</span> String p2) </span>&#123;
+    <span class="hljs-comment">//int age = 10/0;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"------testHotKey"</span>;
+&#125;
+ 
+<span class="hljs-comment">//兜底方法</span>
+<span class="hljs-function"><span class="hljs-keyword">public</span> String <span class="hljs-title">deal_testHotKey</span> <span class="hljs-params">(String p1, String p2, BlockException exception)</span></span>&#123;
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"------deal_testHotKey,o(╥﹏╥)o"</span>;  
+&#125;</code></pre>
+
+
+
+<p><strong>配置</strong></p>
+<p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201107195441216.png" srcset="/img/loading.gif" alt="image-20201107195441216"></p>
+<p>表示对第二个参数进行限流（默认是从0开始 ），一秒钟请求超过2次 就进行限流降级处理。</p>
+<p><strong>测试</strong></p>
+<p>访问testHostKey ,参数 p2=xxx ,  一秒钟访问10 次  发现会触发那个兜底方法 ， </p>
+<p>而 传入 p1 =xxx ,p2不传 发现怎么也触发不了。 。</p>
+<p><strong>特殊情况</strong></p>
+<p><img src="D:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201107200850982.png" srcset="/img/loading.gif" alt="image-20201107200850982"></p>
+<p>意思就是 p2 等于2 的 阈值超过3就 降级 。其他情况 要超过10 才降级限流</p>
+<h3 id="系统规则"><a href="#系统规则" class="headerlink" title="系统规则"></a>系统规则</h3><p>介绍：</p>
+<p>系统保护规则是从应用级别的入口流量进行控制，从单台机器的load、CPU使用率、平均RT、入口<br>QPS和并发线程数等几个维度监控应用指标，让系统尽可能跑在最大吞吐量的同时保证系统整体的稳<br>定性。</p>
+<p>系统保护规则是应用整体维度的，而不是资源维度的，并且仅对入口流量生效。入口流量指的是进入<br>应用的流量（EntryType.IN )，比如Web服务或Dubbo服务端接收的请求，都属于入口流量。</p>
+<p><strong>系统规则支持以下的模式:</strong></p>
+<ul>
+<li>Load自适应(仅对Linux/Unix-like机器生效)∶系统的load1作为启发指标，进行自适应系统保护。当系统load1超过设定的启发值，且系统当前的并发线程数超过估算的系统容量时才会触保护。当系统load1超过设定的启发值，且系统当前的并发线程数超过估算的系统容量时才会触发系统保护（BBR阶段)。系统容量由系统的maxQps * minRt估算得出。设定参考值一般是CPU cores * 2.5。</li>
+<li><strong>CPU usage(1.5.0+版本)</strong>︰当系统CPU使用率超过阈值即触发系统保护(取值范围0.0-1.0），比较灵敏。</li>
+<li><strong>平均RT</strong>:当单台机器上所有入口流量的平均RT达到阈值即触发系统保护，单位是毫秒。</li>
+<li><strong>并发线程数</strong>:当单台机器上所有入口流量的并发线程数达到阈值即触发系统保护。</li>
+<li><strong>入口QPS</strong>:当单台机器上所有入口流星的QPS达到阈值即触发系统保护。</li>
+</ul>
+<h3 id="sentinelResource"><a href="#sentinelResource" class="headerlink" title="@sentinelResource"></a>@sentinelResource</h3><p><strong>自定义限流处理逻辑</strong></p>
+<p>自定义处理返回类</p>
+<pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ConsumerBlockHandler</span> </span>&#123;
+
+	<span class="hljs-comment">// BlockException 必须 </span>
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> CommonResult <span class="hljs-title">handlerException</span><span class="hljs-params">(BlockException e)</span></span>&#123;
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> CommonResult(<span class="hljs-number">200</span>,<span class="hljs-string">"自定义handler  global"</span>,<span class="hljs-keyword">new</span> Payment(<span class="hljs-number">2020L</span>,<span class="hljs-string">"202020"</span>));
+    &#125;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> CommonResult <span class="hljs-title">handlerException2</span><span class="hljs-params">(BlockException e)</span></span>&#123;
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> CommonResult(<span class="hljs-number">200</span>,<span class="hljs-string">"自定义handler  global22"</span>,<span class="hljs-keyword">new</span> Payment(<span class="hljs-number">2020L</span>,<span class="hljs-string">"202020"</span>));
+    &#125;
+&#125;</code></pre>
+
+
+
+<p><strong>新建Controller</strong></p>
+<pre><code class="hljs java"><span class="hljs-comment">/**</span>
+<span class="hljs-comment">*blockHandlerClass  指定自定义兜底类</span>
+<span class="hljs-comment">*blockHandler 指定自定义兜底方法（兜底类中）</span>
+<span class="hljs-comment">**/</span>
+<span class="hljs-meta">@GetMapping</span>(<span class="hljs-string">"/rateLimit/customerBlockHandler"</span>)
+<span class="hljs-meta">@SentinelResource</span>(value = <span class="hljs-string">"customerBlockHandler"</span>,
+        blockHandlerClass = CustomerBlockHandler<span class="hljs-class">.<span class="hljs-keyword">class</span>,</span>
+<span class="hljs-class">        <span class="hljs-title">blockHandler</span> </span>= <span class="hljs-string">"handlerException2"</span>)
+<span class="hljs-function"><span class="hljs-keyword">public</span> CommonResult <span class="hljs-title">customerBlockHandler</span><span class="hljs-params">()</span></span>
+<span class="hljs-function"></span>&#123;
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> CommonResult(<span class="hljs-number">200</span>,<span class="hljs-string">"按客戶自定义"</span>,<span class="hljs-keyword">new</span> Payment(<span class="hljs-number">2020L</span>,<span class="hljs-string">"serial003"</span>));
+&#125;</code></pre>
+
+
+
+
+
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" target="_blank" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/11/25/%E7%AC%94%E8%AE%B0/%E5%BE%AE%E6%9C%8D%E5%8A%A1/9-1-2springcloudAlibabaSentinel%20%E6%95%B4%E5%90%88%20ribbon,openFeign,fallback/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">笔记/微服务/9-1-2springcloudAlibabaSentinel 整合 ribbon,openFeign,fallback</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/11/25/%E7%AC%94%E8%AE%B0/%E5%BE%AE%E6%9C%8D%E5%8A%A1/9-1-0springcloudAlibabaSentinel%20%E7%86%94%E6%96%AD%E8%B7%9F%20%E9%99%90%E6%B5%81%E7%AE%80%E4%BB%8B%20/">
+                        <span class="hidden-mobile">笔记/微服务/9-1-0springcloudAlibabaSentinel 熔断跟 限流简介 </span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: 'article.markdown-body',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/typed.js/2.0.11/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "笔记/微服务/9-1-1springcloudAlibabaSentinel使用&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"model":{"jsonPath":"/live2dw/assets/hijiki.model.json"},"display":{"position":"right","width":200,"height":400},"mobile":{"show":true},"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>
