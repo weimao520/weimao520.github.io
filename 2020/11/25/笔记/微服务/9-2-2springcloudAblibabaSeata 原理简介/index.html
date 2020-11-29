@@ -17,13 +17,13 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"weimao00.gitee.io","root":"/blog/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"weimao520.cn","root":"/blog/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="Seata2019年1月份蚂蚁金服和阿里巴巴共同开源的分布式事务解决方案 Simple Extensible Autonomous Transaction Architecture,简单可扩展自治事务框架 TC&#x2F;TM&#x2F;RM 三大组件 分布式事务执行流程  TM开启分布式事务(TM向TC注册全局事务记录) 换业务场景，编排数据库，服务等事务内资源（RM向TC汇报资源准备状态) TM结束分布式事务，事">
 <meta property="og:type" content="article">
 <meta property="og:title" content="笔记&#x2F;微服务&#x2F;9-2-2springcloudAblibabaSeata 原理简介">
-<meta property="og:url" content="http://weimao00.gitee.io/blog/2020/11/25/%E7%AC%94%E8%AE%B0/%E5%BE%AE%E6%9C%8D%E5%8A%A1/9-2-2springcloudAblibabaSeata%20%E5%8E%9F%E7%90%86%E7%AE%80%E4%BB%8B/index.html">
+<meta property="og:url" content="http://weimao520.cn/2020/11/25/%E7%AC%94%E8%AE%B0/%E5%BE%AE%E6%9C%8D%E5%8A%A1/9-2-2springcloudAblibabaSeata%20%E5%8E%9F%E7%90%86%E7%AE%80%E4%BB%8B/index.html">
 <meta property="og:site_name" content="WeiMao">
 <meta property="og:description" content="Seata2019年1月份蚂蚁金服和阿里巴巴共同开源的分布式事务解决方案 Simple Extensible Autonomous Transaction Architecture,简单可扩展自治事务框架 TC&#x2F;TM&#x2F;RM 三大组件 分布式事务执行流程  TM开启分布式事务(TM向TC注册全局事务记录) 换业务场景，编排数据库，服务等事务内资源（RM向TC汇报资源准备状态) TM结束分布式事务，事">
 <meta property="og:locale" content="zh_CN">
@@ -35,7 +35,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="d:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201118215007974.png">
 
-<link rel="canonical" href="http://weimao00.gitee.io/blog/2020/11/25/%E7%AC%94%E8%AE%B0/%E5%BE%AE%E6%9C%8D%E5%8A%A1/9-2-2springcloudAblibabaSeata%20%E5%8E%9F%E7%90%86%E7%AE%80%E4%BB%8B/">
+<link rel="canonical" href="http://weimao520.cn/2020/11/25/%E7%AC%94%E8%AE%B0/%E5%BE%AE%E6%9C%8D%E5%8A%A1/9-2-2springcloudAblibabaSeata%20%E5%8E%9F%E7%90%86%E7%AE%80%E4%BB%8B/">
 
 
 <script id="page-configurations">
@@ -187,7 +187,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://weimao00.gitee.io/blog/2020/11/25/%E7%AC%94%E8%AE%B0/%E5%BE%AE%E6%9C%8D%E5%8A%A1/9-2-2springcloudAblibabaSeata%20%E5%8E%9F%E7%90%86%E7%AE%80%E4%BB%8B/">
+    <link itemprop="mainEntityOfPage" href="http://weimao520.cn/2020/11/25/%E7%AC%94%E8%AE%B0/%E5%BE%AE%E6%9C%8D%E5%8A%A1/9-2-2springcloudAblibabaSeata%20%E5%8E%9F%E7%90%86%E7%AE%80%E4%BB%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/blog/images/avatar.gif">

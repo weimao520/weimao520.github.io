@@ -17,13 +17,13 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"weimao00.gitee.io","root":"/blog/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"weimao520.cn","root":"/blog/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="原因：一旦我们重启了应用，sentinel规则将会消失，生产环境需要将配置规则进行持久化 怎么解决？将限流配置规则持久化进Nacos保存，只要刷新8401某个rest地址，sentinel控制台的流控规则就能看到，只要Nacov里面的配置不出除，针对341上Sentinel上的流控规则持续有效 修改8401 服务yml 配置 123456789101112131415161718192021222">
 <meta property="og:type" content="article">
 <meta property="og:title" content="笔记&#x2F;微服务&#x2F;9-1-3springcloudAlibabaSentinel 持久化 配置">
-<meta property="og:url" content="http://weimao00.gitee.io/blog/2020/11/25/%E7%AC%94%E8%AE%B0/%E5%BE%AE%E6%9C%8D%E5%8A%A1/9-1-3springcloudAlibabaSentinel%20%E6%8C%81%E4%B9%85%E5%8C%96%20%E9%85%8D%E7%BD%AE/index.html">
+<meta property="og:url" content="http://weimao520.cn/2020/11/25/%E7%AC%94%E8%AE%B0/%E5%BE%AE%E6%9C%8D%E5%8A%A1/9-1-3springcloudAlibabaSentinel%20%E6%8C%81%E4%B9%85%E5%8C%96%20%E9%85%8D%E7%BD%AE/index.html">
 <meta property="og:site_name" content="WeiMao">
 <meta property="og:description" content="原因：一旦我们重启了应用，sentinel规则将会消失，生产环境需要将配置规则进行持久化 怎么解决？将限流配置规则持久化进Nacos保存，只要刷新8401某个rest地址，sentinel控制台的流控规则就能看到，只要Nacov里面的配置不出除，针对341上Sentinel上的流控规则持续有效 修改8401 服务yml 配置 123456789101112131415161718192021222">
 <meta property="og:locale" content="zh_CN">
@@ -34,7 +34,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="d:%5C%E7%AC%94%E8%AE%B0%E6%88%AA%E5%9B%BE%5C%E5%8D%9A%E5%AE%A2%5Cimage-20201107221045823.png">
 
-<link rel="canonical" href="http://weimao00.gitee.io/blog/2020/11/25/%E7%AC%94%E8%AE%B0/%E5%BE%AE%E6%9C%8D%E5%8A%A1/9-1-3springcloudAlibabaSentinel%20%E6%8C%81%E4%B9%85%E5%8C%96%20%E9%85%8D%E7%BD%AE/">
+<link rel="canonical" href="http://weimao520.cn/2020/11/25/%E7%AC%94%E8%AE%B0/%E5%BE%AE%E6%9C%8D%E5%8A%A1/9-1-3springcloudAlibabaSentinel%20%E6%8C%81%E4%B9%85%E5%8C%96%20%E9%85%8D%E7%BD%AE/">
 
 
 <script id="page-configurations">
@@ -186,7 +186,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://weimao00.gitee.io/blog/2020/11/25/%E7%AC%94%E8%AE%B0/%E5%BE%AE%E6%9C%8D%E5%8A%A1/9-1-3springcloudAlibabaSentinel%20%E6%8C%81%E4%B9%85%E5%8C%96%20%E9%85%8D%E7%BD%AE/">
+    <link itemprop="mainEntityOfPage" href="http://weimao520.cn/2020/11/25/%E7%AC%94%E8%AE%B0/%E5%BE%AE%E6%9C%8D%E5%8A%A1/9-1-3springcloudAlibabaSentinel%20%E6%8C%81%E4%B9%85%E5%8C%96%20%E9%85%8D%E7%BD%AE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/blog/images/avatar.gif">
